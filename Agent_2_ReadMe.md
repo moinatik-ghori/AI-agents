@@ -15,86 +15,9 @@ The program:
 - Launches an interactive web-based chatbot interface
 - Answers questions using only the provided information (LinkedIn PDF + summary)
 
-## Prerequisites
-
-### 1. Install UV Package Manager
-
-**UV** is a fast Python package installer and resolver written in Rust. It's the recommended way to manage dependencies for this project.
-
-#### Installation on Windows:
-
-**Option A: Using PowerShell (Recommended)**
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-**Option B: Using pip**
-```bash
-pip install uv
-```
-
-**Option C: Using pipx**
-```bash
-pipx install uv
-```
-
-#### Installation on macOS/Linux:
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-#### Verify Installation:
-
-After installation, verify UV is working:
-```bash
-uv --version
-```
-
-You may need to restart your terminal or add UV to your PATH. On Windows, UV is typically installed to `%USERPROFILE%\.cargo\bin\uv.exe`.
-
-### 2. Install Project Dependencies Using UV
-
-Once UV is installed, navigate to the project root directory (where `pyproject.toml` is located) and run:
-
-```bash
-uv sync
-```
-
-This command will:
-- Read the `pyproject.toml` file
-- Install all dependencies listed in the file
-- Create a virtual environment automatically
-- Lock the dependency versions
-
-**Alternative: Install dependencies in an existing environment**
-```bash
-uv pip install -e .
-```
-
-### 3. Set Up OpenAI API Key
-
-**Step 1: Get Your OpenAI API Key**
-1. Go to [OpenAI Platform](https://platform.openai.com/)
-2. Sign up or log in to your account
-3. Navigate to [API Keys](https://platform.openai.com/api-keys)
-4. Click "Create new secret key"
-5. Copy the key (you won't be able to see it again!)
-
-**Step 2: Create `.env` File**
-1. In the project root directory (same level as `pyproject.toml`), create a file named `.env`
-2. Add the following line:
-   ```
-   OPENAI_API_KEY=your_actual_api_key_here
-   ```
-3. Replace `your_actual_api_key_here` with your actual API key
-
-**Important Security Notes:**
-- Never commit the `.env` file to version control (it should be in `.gitignore`)
-- Keep your API key secret and don't share it publicly
-- The program will not run without a valid API key
-
 ## Setup Instructions
+
+> **Note**: Before running this agent, make sure you've completed the Prerequisites section in the main [README.md](README.md) file, including installing UV, dependencies, and setting up your OpenAI API key.
 
 ### Step 1: Prepare Your Files
 
@@ -115,7 +38,7 @@ uv pip install -e .
 2. Press `Ctrl+P` (Windows) or `Cmd+P` (Mac) to open print dialog
 3. Select "Save as PDF" or "Microsoft Print to PDF" as the printer
 4. Save the file with a descriptive name (e.g., `YourName_LinkedIn.pdf`)
-5. Place this file in the `Basics/files/` folder
+5. Place this file in the `files/` folder
 
 **Method 3: Using Browser Extensions**
 - Use browser extensions like "Print Friendly & PDF" or "Save as PDF"
@@ -124,7 +47,7 @@ uv pip install -e .
 
 #### Creating a Summary File
 
-1. Create a text file named `summary.txt` in the `Basics/files/` folder
+1. Create a text file named `summary.txt` in the `files/` folder
 2. Write a comprehensive summary about the person, including:
    - Professional background and experience
    - Key skills and expertise
@@ -150,24 +73,18 @@ name = "Your Name Here"
 ```
 
 Also, make sure the file paths match your setup:
-- PDF file path: `Basics/files/YourName_LinkedIn.pdf.pdf` (line 29)
-- Summary file path: `Basics/files/summary.txt` (line 38)
+- PDF file path: `files/YourName_LinkedIn.pdf.pdf` (line 29)
+- Summary file path: `files/summary.txt` (line 38)
 
 ### Step 3: Run the Program
 
 **Using UV (Recommended):**
 ```bash
-uv run python Basics/Agent_2.py
+uv run python Agent_2.py
 ```
 
 **Using Standard Python:**
 ```bash
-python Basics/Agent_2.py
-```
-
-Or if you're in the Basics directory:
-```bash
-cd Basics
 python Agent_2.py
 ```
 
@@ -256,53 +173,18 @@ AI-agents/
 ├── .env                          # Your OpenAI API key (not in git)
 ├── pyproject.toml                # Project dependencies
 ├── uv.lock                       # Locked dependency versions
-└── Basics/
-    ├── Agent_2.py                # Main program
-    ├── Agent_2_ReadMe.md         # This file
-    └── files/
-        ├── YourName_LinkedIn.pdf.pdf  # LinkedIn profile PDF
-        └── summary.txt                # Professional summary
+├── Agent_2.py                    # Main program
+├── Agent_2_ReadMe.md             # This file
+└── files/
+    ├── YourName_LinkedIn.pdf.pdf  # LinkedIn profile PDF
+    └── summary.txt                # Professional summary
 ```
 
 ## Key Concepts Explained
 
-### 1. **Environment Variables and `.env` Files**
+> **Note**: For common concepts like Environment Variables, OpenAI Client, Message Format, API Response Structure, Error Handling, Model Selection, and String Formatting, see the [Important Concepts Explained](README.md#important-concepts-explained) section in the main README.md file.
 
-**What are they?**
-Environment variables are key-value pairs that store configuration settings outside your code. The `.env` file is a special file that stores these variables.
-
-**Why use them?**
-- **Security**: Keeps sensitive data (like API keys) out of your code
-- **Flexibility**: Different environments (development, production) can use different keys
-- **Best Practice**: Prevents accidentally committing secrets to version control
-
-**How it works in this program:**
-```python
-from dotenv import load_dotenv
-load_dotenv(override=True)  # Loads variables from .env file
-openai_api_key = os.getenv("OPENAI_API_KEY")  # Read the key
-```
-
-### 2. **OpenAI Client and API Calls**
-
-**What is the OpenAI Client?**
-The `OpenAI` class is a Python client that provides a convenient interface to interact with OpenAI's API. It handles authentication, request formatting, and response parsing.
-
-**How it works:**
-```python
-client = OpenAI(api_key=openai_api_key)  # Create client with your key
-response = client.chat.completions.create(  # Make API call
-    model="gpt-4o-mini",
-    messages=messages
-)
-```
-
-**Key components:**
-- **Model**: The AI model to use (`gpt-4o-mini` is cost-effective and capable)
-- **Messages**: A list of conversation messages with roles (system, user, assistant)
-- **Response**: Contains the AI's generated text
-
-### 3. **System Prompts**
+### 1. **System Prompts**
 
 **What is a system prompt?**
 A system prompt is a special message that sets the context and behavior for the AI. It tells the AI "who" it should be and "how" it should respond.
@@ -320,7 +202,7 @@ Without a good system prompt, the AI might:
 - Respond in the wrong tone
 - Not understand its purpose
 
-### 4. **PDF Text Extraction**
+### 2. **PDF Text Extraction**
 
 **What is PDF extraction?**
 PDFs contain text, but it's encoded in a special format. We need to extract the readable text from the PDF file.
@@ -337,28 +219,24 @@ for page in reader.pages:        # Loop through pages
 - The AI needs text to understand the content
 - We convert the PDF into a string the AI can process
 
-### 5. **Message Format and Conversation History**
+### 3. **Conversation History**
 
-**What is the message format?**
-OpenAI's API expects messages in a specific structure:
+**What is conversation history?**
+The `history` parameter in the `chat()` function contains previous messages, allowing the AI to maintain context across the conversation. This enables multi-turn conversations where the AI remembers what was discussed earlier.
+
+**How it works:**
 ```python
-[
-    {"role": "system", "content": "You are a helpful assistant"},
-    {"role": "user", "content": "Hello"},
-    {"role": "assistant", "content": "Hi! How can I help?"},
-    {"role": "user", "content": "What's my experience?"}
-]
+def chat(message, history):
+    messages = [{"role": "system", "content": system_prompt}] + history + [{"role": "user", "content": message}]
+    # history contains previous user/assistant message pairs
 ```
 
-**Roles:**
-- **system**: Sets the AI's behavior (sent once, at the start)
-- **user**: Messages from the human
-- **assistant**: Previous responses from the AI
+**Why it's important:**
+- Maintains context across multiple interactions
+- Enables natural conversation flow
+- Allows follow-up questions and clarifications
 
-**Conversation history:**
-The `history` parameter in the `chat()` function contains previous messages, allowing the AI to maintain context across the conversation.
-
-### 6. **Gradio Interface**
+### 4. **Gradio Interface**
 
 **What is Gradio?**
 Gradio is a Python library that quickly creates web interfaces for machine learning models and AI applications.
@@ -380,7 +258,7 @@ gr.ChatInterface(chat, title="AI Assistant").launch()
 - Easy to share and test
 - Professional-looking interface
 
-### 7. **Function Design: The `chat()` Function**
+### 5. **Function Design: The `chat()` Function**
 
 **What does it do?**
 The `chat()` function is called every time the user sends a message. It:
@@ -393,40 +271,7 @@ The `chat()` function is called every time the user sends a message. It:
 - **Reusability**: The function can be used in different interfaces
 - **Testability**: Easy to test the chat logic independently
 
-### 8. **Error Handling and Validation**
-
-**API Key Validation:**
-```python
-if openai_api_key:
-    client = OpenAI(api_key=openai_api_key)
-else:
-    print("OpenAI API key is not set")
-    client = None
-```
-
-**Why it's important:**
-- Prevents runtime errors
-- Gives clear feedback to users
-- Helps with debugging
-
-### 9. **String Formatting and f-strings**
-
-**What are f-strings?**
-F-strings (formatted string literals) allow you to embed expressions inside strings.
-
-**Example:**
-```python
-name = "John"
-system_prompt = f"You are {name}'s assistant"
-# Result: "You are John's assistant"
-```
-
-**In this program:**
-- Used to insert the person's name
-- Combines summary and PDF text
-- Creates dynamic system prompts
-
-### 10. **File I/O (Input/Output)**
+### 6. **File I/O (Input/Output)**
 
 **Reading files:**
 ```python
@@ -446,31 +291,18 @@ with open("file.txt", "r") as f:
 
 ## Troubleshooting
 
-### Error: "openai is not defined"
-- **Solution**: Make sure you've installed dependencies using `uv sync` or `pip install -e .`
-- The OpenAI package should be in your `pyproject.toml`
+### Error: "openai is not defined" or "ModuleNotFoundError"
+- **Solution**: See the Prerequisites section in the main [README.md](README.md) file for installing dependencies.
 
 ### Error: "OpenAI API key is not set"
-- **Solution**: 
-  1. Create a `.env` file in the project root
-  2. Add: `OPENAI_API_KEY=your_key_here`
-  3. Make sure the file is named exactly `.env` (with the dot)
+- **Solution**: See the Prerequisites section in the main [README.md](README.md) file for setting up your API key.
 
 ### Error: "FileNotFoundError" for PDF or summary
 - **Solution**: 
-  1. Check that files exist in `Basics/files/` folder
+  1. Check that files exist in `files/` folder
   2. Verify file names match exactly (case-sensitive)
   3. Update file paths in `Agent_2.py` if needed
 
-### Error: "ModuleNotFoundError"
-- **Solution**: Install dependencies:
-  ```bash
-  uv sync
-  ```
-  Or:
-  ```bash
-  pip install -e .
-  ```
 
 ### Gradio interface not opening
 - **Solution**: 
@@ -506,7 +338,7 @@ Modify the `system_prompt` variable (lines 45-58) to change:
 You can add more files to the knowledge base:
 ```python
 # Load additional files
-with open("Basics/files/projects.txt", "r") as f:
+with open("files/projects.txt", "r") as f:
     projects = f.read()
 
 system_prompt += f"\n\n## Projects:\n{projects}\n"

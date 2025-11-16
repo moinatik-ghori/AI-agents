@@ -26,7 +26,7 @@ else:
     print("OpenAI API key is not set")
     client = None
 
-reader = PdfReader("Basics/files/Moinatik_Ghori_LinkedIn.pdf.pdf")
+reader = PdfReader("files/Moinatik_Ghori_LinkedIn.pdf.pdf")
 pdf_text = ""
 
 for page in reader.pages:
@@ -35,7 +35,7 @@ for page in reader.pages:
 
 # print(pdf_text)
 
-with open("Basics/files/summary.txt", "r") as f:
+with open("files/summary.txt", "r") as f:
     summary = f.read()
 
 # print(summary)
