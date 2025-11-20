@@ -13,7 +13,7 @@ The program uses a modular function-based design:
 1. **`validate_api_keys()`**: Validates the OpenAI API key and creates the OpenAI client
 2. **`read_pdf_summary()`**: Reads the LinkedIn profile PDF and summary text file
 3. **`prepare_system_prompt()`**: Creates a comprehensive system prompt with the person's information
-4. **`chat()`**: Handles user messages and generates AI responses using the system prompt
+4. **`create_chat_function()`**: Creates a chat function with client and system_prompt bound via closure
 5. **`launch_app()`**: Launches the Gradio web interface for interactive chatting
 
 The program:
@@ -82,8 +82,8 @@ name = "Your Name Here"
 ```
 
 Also, make sure the file paths match your setup:
-- PDF file path: `files/YourName_LinkedIn.pdf.pdf` (line 29 in `read_pdf_summary()` function)
-- Summary file path: `files/summary.txt` (line 38 in `read_pdf_summary()` function)
+- PDF file path: `files/YourName_LinkedIn.pdf.pdf` (line 25 in `read_pdf_summary()` function)
+- Summary file path: `files/summary.txt` (line 34 in `read_pdf_summary()` function)
 
 ### Step 3: Run the Program
 
@@ -118,33 +118,35 @@ The program executes in the following sequence:
 
 ### Phase 1: Initialization
 1. **Load Environment Variables**: `load_dotenv()` loads variables from `.env` file
-2. **Set Global Variables**: Initialize `client` and `system_prompt` as `None`
-3. **Set Person's Name**: Define the `name` variable
+2. **Set Person's Name**: Define the `name` variable
 
 ### Phase 2: API Key Validation
-4. **Validate API Key**: `validate_api_keys()` checks if OpenAI API key exists
-5. **Create OpenAI Client**: If valid, creates and returns `OpenAI` client instance
-6. **Error Handling**: If invalid, prints error message and exits
+3. **Validate API Key**: `validate_api_keys()` checks if OpenAI API key exists
+4. **Create OpenAI Client**: If valid, creates and returns `OpenAI` client instance
+5. **Error Handling**: If invalid, prints error message and exits
 
 ### Phase 3: Data Loading
-7. **Read PDF**: `read_pdf_summary()` extracts text from LinkedIn PDF file
-8. **Read Summary**: `read_pdf_summary()` loads the summary text file
-9. **Return Data**: Function returns both `pdf_text` and `summary`
+6. **Read PDF**: `read_pdf_summary()` extracts text from LinkedIn PDF file
+7. **Read Summary**: `read_pdf_summary()` loads the summary text file
+8. **Return Data**: Function returns both `pdf_text` and `summary`
 
 ### Phase 4: System Prompt Creation
-10. **Prepare Prompt**: `prepare_system_prompt()` creates the system prompt
-11. **Include Data**: Combines person's name, summary, and PDF text into prompt
-12. **Set Global Variable**: Assigns the created prompt to global `system_prompt`
+9. **Prepare Prompt**: `prepare_system_prompt()` creates the system prompt
+10. **Include Data**: Combines person's name, summary, and PDF text into prompt
+11. **Return Prompt**: Function returns the complete system prompt
 
-### Phase 5: Application Launch
-13. **Set Global Client**: Assigns OpenAI client to global `client` variable
-14. **Launch Interface**: `launch_app()` starts the Gradio web interface
+### Phase 5: Chat Function Creation
+12. **Create Chat Function**: `create_chat_function()` creates a chat function with client and system_prompt bound via closure
+13. **Closure Binding**: The chat function has access to client and system_prompt through closure
+
+### Phase 6: Application Launch
+14. **Launch Interface**: `launch_app()` starts the Gradio web interface with the chat function
 15. **Ready for Chat**: Users can now interact with the AI assistant
 
-### Phase 6: Chat Interaction (Runtime)
+### Phase 7: Chat Interaction (Runtime)
 16. **User Message**: User sends a message through Gradio interface
 17. **Process Message**: `chat()` function combines system prompt, history, and new message
-18. **API Call**: Sends request to OpenAI API using global `client`
+18. **API Call**: Sends request to OpenAI API using the client bound in closure
 19. **Return Response**: AI's response is displayed in the interface
 20. **Maintain History**: Conversation history is automatically managed by Gradio
 
@@ -310,13 +312,19 @@ The program is organized into focused functions:
 - **`validate_api_keys()`**: Handles API key validation and client creation
 - **`read_pdf_summary()`**: Handles file I/O operations
 - **`prepare_system_prompt()`**: Creates the system prompt with person's information
-- **`chat()`**: Handles user messages and generates AI responses
+- **`create_chat_function()`**: Creates a chat function with client and system_prompt bound via closure
 - **`launch_app()`**: Launches the Gradio interface
 
+**The `create_chat_function()` and closure pattern:**
+The `create_chat_function()` takes `client` and `system_prompt` as parameters and returns a `chat()` function that has them bound via closure. This means:
+1. The `chat()` function has access to `client` and `system_prompt` through closure
+2. No global variables are needed
+3. Dependencies are explicit and passed as parameters
+
 **The `chat()` function:**
-The `chat()` function is called every time the user sends a message. It:
-1. Combines the system prompt, history, and new message
-2. Sends the request to OpenAI using the global `client` variable
+The `chat()` function is created by `create_chat_function()` and is called every time the user sends a message. It:
+1. Combines the system prompt (from closure), history, and new message
+2. Sends the request to OpenAI using the client (from closure)
 3. Returns the AI's response
 
 **Why this design?**
@@ -324,7 +332,8 @@ The `chat()` function is called every time the user sends a message. It:
 - **Modularity**: Functions can be tested and modified independently
 - **Reusability**: Functions can be used in different contexts
 - **Maintainability**: Easier to debug and extend
-- **Global variables**: `client` and `system_prompt` are set once and reused
+- **No global variables**: Uses closure pattern for clean dependency injection
+- **Explicit dependencies**: Client and system_prompt are passed explicitly
 
 ### 6. **File I/O (Input/Output)**
 
@@ -375,7 +384,7 @@ with open("file.txt", "r") as f:
 ## Advanced Customization
 
 ### Changing the AI Model
-Edit line 47 in the `chat()` function:
+Edit line 45 in the `create_chat_function()` function (inside the nested `chat()` function):
 ```python
 model="gpt-4o"  # More capable but more expensive
 # or
@@ -398,10 +407,10 @@ name = "Your Name Here"
 ```
 
 ### Modifying File Paths
-Edit the `read_pdf_summary()` function (lines 29 and 38) to change file paths:
+Edit the `read_pdf_summary()` function (lines 25 and 34) to change file paths:
 ```python
-reader = PdfReader("files/YourName_LinkedIn.pdf.pdf")  # Line 29
-with open("files/summary.txt", "r") as f:  # Line 38
+reader = PdfReader("files/YourName_LinkedIn.pdf.pdf")  # Line 25
+with open("files/summary.txt", "r") as f:  # Line 34
 ```
 
 ### Adding More Context
@@ -429,6 +438,7 @@ And update the main block to pass the additional parameter:
 ```python
 pdf_text, summary, projects = read_pdf_summary()
 system_prompt = prepare_system_prompt(pdf_text, summary, projects)
+chat = create_chat_function(openai_client, system_prompt)
 ```
 
 ## Best Practices
