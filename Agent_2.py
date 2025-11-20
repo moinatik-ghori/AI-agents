@@ -9,10 +9,6 @@ import gradio as gr
 load_dotenv(override=True)
 name  = "Moinatik Ghori"
 
-# Global variables for chat function
-client = None
-system_prompt = None
-
 
 def validate_api_keys():
     openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -41,13 +37,16 @@ def read_pdf_summary():
     return pdf_text, summary
 
 
-def chat(message, history):
-    messages = [{"role" :"system", "content" : system_prompt}] + history + [{"role" :"user", "content" : message}]
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages
-    )
-    return response.choices[0].message.content
+def create_chat_function(client, system_prompt):
+    """Create a chat function with the client and system_prompt bound."""
+    def chat(message, history):
+        messages = [{"role" :"system", "content" : system_prompt}] + history + [{"role" :"user", "content" : message}]
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages
+        )
+        return response.choices[0].message.content
+    return chat
 
 
 
@@ -69,17 +68,17 @@ def prepare_system_prompt(pdf_text, summary):
 
     return system_prompt
 
-def launch_app():
-    gr.ChatInterface(chat, title=f"{name}'s AI Assistant", type="messages").launch()
+def launch_app(chat_func):
+    gr.ChatInterface(chat_func, title=f"{name}'s AI Assistant", type="messages").launch()
 
 
 if __name__ == "__main__":
     openai_client = validate_api_keys()
     if openai_client:
-        client = openai_client  # Set global client variable
         pdf_text, summary = read_pdf_summary()
         system_prompt = prepare_system_prompt(pdf_text, summary)
-        launch_app()``
+        chat = create_chat_function(openai_client, system_prompt)
+        launch_app(chat)
     else:
         print("Cannot launch app: OpenAI API key is not set")
 
