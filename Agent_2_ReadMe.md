@@ -8,7 +8,16 @@ This program demonstrates how to build an interactive AI agent that can act as a
 
 ## How It Works
 
+The program uses a modular function-based design:
+
+1. **`validate_api_keys()`**: Validates the OpenAI API key and creates the OpenAI client
+2. **`read_pdf_summary()`**: Reads the LinkedIn profile PDF and summary text file
+3. **`prepare_system_prompt()`**: Creates a comprehensive system prompt with the person's information
+4. **`chat()`**: Handles user messages and generates AI responses using the system prompt
+5. **`launch_app()`**: Launches the Gradio web interface for interactive chatting
+
 The program:
+- Validates API credentials before proceeding
 - Reads a LinkedIn profile from a PDF file
 - Loads a comprehensive summary about the person
 - Creates a system prompt that instructs the AI to act as the person's professional representative
@@ -67,14 +76,14 @@ includes machine learning, API design, and DevOps practices.
 
 ### Step 2: Update the Code (Optional)
 
-If you want to customize the person's name, edit `Agent_2.py` and change line 43:
+If you want to customize the person's name, edit `Agent_2.py` and change line 10:
 ```python
 name = "Your Name Here"
 ```
 
 Also, make sure the file paths match your setup:
-- PDF file path: `files/YourName_LinkedIn.pdf.pdf` (line 29)
-- Summary file path: `files/summary.txt` (line 38)
+- PDF file path: `files/YourName_LinkedIn.pdf.pdf` (line 29 in `read_pdf_summary()` function)
+- Summary file path: `files/summary.txt` (line 38 in `read_pdf_summary()` function)
 
 ### Step 3: Run the Program
 
@@ -89,11 +98,11 @@ python Agent_2.py
 ```
 
 The program will:
-1. Check for the OpenAI API key
-2. Load and extract text from the LinkedIn PDF
-3. Load the summary file
-4. Create the system prompt
-5. Launch a Gradio web interface
+1. Validate the OpenAI API key using `validate_api_keys()`
+2. Load and extract text from the LinkedIn PDF using `read_pdf_summary()`
+3. Load the summary file using `read_pdf_summary()`
+4. Create the system prompt using `prepare_system_prompt()`
+5. Launch a Gradio web interface using `launch_app()`
 
 You'll see output like:
 ```
@@ -102,6 +111,42 @@ Running on local URL:  http://127.0.0.1:7860
 ```
 
 Open the URL in your browser to start chatting!
+
+## Program Flow
+
+The program executes in the following sequence:
+
+### Phase 1: Initialization
+1. **Load Environment Variables**: `load_dotenv()` loads variables from `.env` file
+2. **Set Global Variables**: Initialize `client` and `system_prompt` as `None`
+3. **Set Person's Name**: Define the `name` variable
+
+### Phase 2: API Key Validation
+4. **Validate API Key**: `validate_api_keys()` checks if OpenAI API key exists
+5. **Create OpenAI Client**: If valid, creates and returns `OpenAI` client instance
+6. **Error Handling**: If invalid, prints error message and exits
+
+### Phase 3: Data Loading
+7. **Read PDF**: `read_pdf_summary()` extracts text from LinkedIn PDF file
+8. **Read Summary**: `read_pdf_summary()` loads the summary text file
+9. **Return Data**: Function returns both `pdf_text` and `summary`
+
+### Phase 4: System Prompt Creation
+10. **Prepare Prompt**: `prepare_system_prompt()` creates the system prompt
+11. **Include Data**: Combines person's name, summary, and PDF text into prompt
+12. **Set Global Variable**: Assigns the created prompt to global `system_prompt`
+
+### Phase 5: Application Launch
+13. **Set Global Client**: Assigns OpenAI client to global `client` variable
+14. **Launch Interface**: `launch_app()` starts the Gradio web interface
+15. **Ready for Chat**: Users can now interact with the AI assistant
+
+### Phase 6: Chat Interaction (Runtime)
+16. **User Message**: User sends a message through Gradio interface
+17. **Process Message**: `chat()` function combines system prompt, history, and new message
+18. **API Call**: Sends request to OpenAI API using global `client`
+19. **Return Response**: AI's response is displayed in the interface
+20. **Maintain History**: Conversation history is automatically managed by Gradio
 
 ## Use Cases and Leveraging the Tool
 
@@ -258,18 +303,28 @@ gr.ChatInterface(chat, title="AI Assistant").launch()
 - Easy to share and test
 - Professional-looking interface
 
-### 5. **Function Design: The `chat()` Function**
+### 5. **Function Design: Modular Architecture**
 
-**What does it do?**
+**What does the modular design provide?**
+The program is organized into focused functions:
+- **`validate_api_keys()`**: Handles API key validation and client creation
+- **`read_pdf_summary()`**: Handles file I/O operations
+- **`prepare_system_prompt()`**: Creates the system prompt with person's information
+- **`chat()`**: Handles user messages and generates AI responses
+- **`launch_app()`**: Launches the Gradio interface
+
+**The `chat()` function:**
 The `chat()` function is called every time the user sends a message. It:
 1. Combines the system prompt, history, and new message
-2. Sends the request to OpenAI
+2. Sends the request to OpenAI using the global `client` variable
 3. Returns the AI's response
 
 **Why this design?**
-- **Separation of concerns**: Chat logic is separate from UI
-- **Reusability**: The function can be used in different interfaces
-- **Testability**: Easy to test the chat logic independently
+- **Separation of concerns**: Each function has a single responsibility
+- **Modularity**: Functions can be tested and modified independently
+- **Reusability**: Functions can be used in different contexts
+- **Maintainability**: Easier to debug and extend
+- **Global variables**: `client` and `system_prompt` are set once and reused
 
 ### 6. **File I/O (Input/Output)**
 
@@ -320,7 +375,7 @@ with open("file.txt", "r") as f:
 ## Advanced Customization
 
 ### Changing the AI Model
-Edit line 15 in `Agent_2.py`:
+Edit line 47 in the `chat()` function:
 ```python
 model="gpt-4o"  # More capable but more expensive
 # or
@@ -328,20 +383,52 @@ model="gpt-3.5-turbo"  # Faster and cheaper
 ```
 
 ### Customizing the System Prompt
-Modify the `system_prompt` variable (lines 45-58) to change:
+Modify the `prepare_system_prompt()` function (starting at line 54) to change:
 - The AI's personality
 - Response style
 - Information constraints
 - Additional instructions
 
-### Adding More Context
-You can add more files to the knowledge base:
-```python
-# Load additional files
-with open("files/projects.txt", "r") as f:
-    projects = f.read()
+You can also modify the system prompt template directly in the function to add or remove guidelines.
 
-system_prompt += f"\n\n## Projects:\n{projects}\n"
+### Customizing the Person's Name
+Edit line 10 to change the name:
+```python
+name = "Your Name Here"
+```
+
+### Modifying File Paths
+Edit the `read_pdf_summary()` function (lines 29 and 38) to change file paths:
+```python
+reader = PdfReader("files/YourName_LinkedIn.pdf.pdf")  # Line 29
+with open("files/summary.txt", "r") as f:  # Line 38
+```
+
+### Adding More Context
+You can add more files to the knowledge base by modifying the `read_pdf_summary()` function:
+```python
+def read_pdf_summary():
+    # ... existing PDF and summary reading code ...
+    
+    # Add additional files
+    with open("files/projects.txt", "r") as f:
+        projects = f.read()
+    
+    return pdf_text, summary, projects  # Return additional data
+```
+
+Then update `prepare_system_prompt()` to include the additional context:
+```python
+def prepare_system_prompt(pdf_text, summary, projects):
+    # ... existing system prompt code ...
+    system_prompt += f"\n\n## Projects:\n{projects}\n"
+    return system_prompt
+```
+
+And update the main block to pass the additional parameter:
+```python
+pdf_text, summary, projects = read_pdf_summary()
+system_prompt = prepare_system_prompt(pdf_text, summary, projects)
 ```
 
 ## Best Practices
